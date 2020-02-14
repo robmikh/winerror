@@ -31,11 +31,7 @@ macro_rules! hresults {
 
 #[allow(overflowing_literals)]
 fn get_error_info_from_code(code: i32) -> Option<ErrorInfo> {
-    hresults!(
-        code,
-        0x00030200, "STG_S_CONVERTED", "The underlying file was converted to compound file format.",
-        0x80070005, "E_ACCESSDENIED", "General access denied error."
-    )
+    include!("..\\data\\generated\\hresults_generated.in")
 }
 
 fn get_error_info_from_str(input: &str) -> Option<ErrorInfo> {
@@ -49,7 +45,10 @@ fn parse_code(input: &str) -> i32 {
         // inputs like 0x80070005 would fail.
         i64::from_str_radix(input.trim_start_matches("0x"), 16).unwrap() as i32
     } else {
-        input.parse::<i32>().unwrap()
+        // We do this to get around overflow checks. Otherwise,
+        // inputs like -2147942405 would fail.
+        let input = input.replace("-", "");
+        input.parse::<i64>().unwrap() as i32
     }
 }
 
