@@ -30,40 +30,58 @@ macro_rules! hresults {
 }
 
 #[allow(overflowing_literals)]
-fn get_error_info_from_code(code: i32) -> Option<ErrorInfo> {
+fn get_error_info(code: i32) -> Option<ErrorInfo> {
     include!("..\\data\\generated\\hresults_generated.in")
 }
 
-fn get_error_info_from_str(input: &str) -> Option<ErrorInfo> {
-    let code = parse_code(input);
-    get_error_info_from_code(code)
-}
-
-fn parse_code(input: &str) -> i32 {
+fn parse_code(input: &str) -> Result<i32, std::num::ParseIntError> {
     if input.starts_with("0x") {
         // We do this to get around overflow checks. Otherwise,
         // inputs like 0x80070005 would fail.
-        i64::from_str_radix(input.trim_start_matches("0x"), 16).unwrap() as i32
+        Ok(i64::from_str_radix(input.trim_start_matches("0x"), 16)? as i32)
     } else {
         // We do this to get around underflow and overflow checks. Otherwise,
         // inputs like -2147942405 would fail.
         let input = input.replace("-", "");
-        input.parse::<i64>().unwrap() as i32
+        Ok(input.parse::<i64>()? as i32)
+    }
+}
+
+fn print_usage() {
+    println!("Usage: winerror <code>");
+    println!("Examples:");
+    println!("winerror 0x80070005");
+    println!("winerror 2147942405");
+}
+
+fn lookup_hresult(code: i32) -> bool {
+    if let Some(info) = get_error_info(code) {
+        println!("{:#010x}", info.code);
+        println!("{}", info.name);
+        println!("{}", info.description);
+        true
+    } else {
+        println!("No matches found for \"{:#010x}\"!", code);
+        false
+    }
+}
+
+fn lookup_from_str(input: &str) -> bool {
+    let input = input.trim();
+    if let Ok(code) = parse_code(&input) {
+        lookup_hresult(code)
+    } else {
+        println!("Invalid input!");
+        print_usage();
+        false
     }
 }
 
 fn main() {
     if let Some(input) = std::env::args().nth(1) {
-        let input = input.trim();
-        if let Some(info) = get_error_info_from_str(&input) {
-            println!("{:#010x}", info.code);
-            println!("{}", info.name);
-            println!("{}", info.description);
-        } else {
-            println!("No matches found for \"{:#010x}\"!", parse_code(&input));
-        }
+        lookup_from_str(&input);
     } else {
-        // TODO: print usage
+        print_usage();
     }
 }
 
@@ -84,7 +102,7 @@ mod tests {
         
         let mut temp = 0;
         for (code, will_succeed) in codes {
-            if let Some(info) = crate::get_error_info_from_code(code) {
+            if let Some(info) = crate::get_error_info(code) {
                 assert!(will_succeed);
                 assert_eq!(code, info.code);
             } else {
@@ -97,16 +115,31 @@ mod tests {
     }
 
     #[test]
+    fn successfull_hex_lookup() {
+        assert!(crate::lookup_from_str("0x80070005"));
+    }
+
+    #[test]
+    fn successfull_dec_lookup() {
+        assert!(crate::lookup_from_str("2147942405"));
+    }
+
+    #[test]
+    fn unsuccessfull_lookup() {
+        assert!(!crate::lookup_from_str("0x80070000"));
+    }
+
+    #[test]
     #[allow(overflowing_literals)]
     fn negative_input_test() {
         let code = crate::parse_code("-2147942405");
-        assert_eq!(0x80070005, code);
+        assert_eq!(Ok(0x80070005), code);
     }
 
     #[test]
     #[allow(overflowing_literals)]
     fn hex_input_test() {
         let code = crate::parse_code("0x80070005");
-        assert_eq!(0x80070005, code);
+        assert_eq!(Ok(0x80070005), code);
     }
 }
