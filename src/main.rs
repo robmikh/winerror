@@ -14,7 +14,7 @@ impl fmt::Debug for ErrorInfo {
     }
 }
 
-macro_rules! hresults {
+macro_rules! code_lookup {
     ( $input:expr, $( $code:expr, $name:tt, $desc:tt ),* ) => {
         match $input {
             $(
@@ -31,7 +31,7 @@ macro_rules! hresults {
 
 #[allow(overflowing_literals)]
 fn get_error_info(code: i32) -> Option<ErrorInfo> {
-    include!("..\\data\\generated\\hresults_generated.in")
+    include!("..\\data\\generated\\code_lookup_generated.in")
 }
 
 fn parse_code(input: &str) -> Result<i32, std::num::ParseIntError> {
