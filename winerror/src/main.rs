@@ -28,7 +28,7 @@ fn print_usage() {
     println!("winerror 2147942405");
 }
 
-fn lookup_hresult(code: i32) -> bool {
+fn lookup_error_code(code: i32) -> bool {
     if let Some(infos) = get_error_infos(code) {
         println!("{} match(es) found:", infos.len());
         for info in infos {
@@ -46,7 +46,7 @@ fn lookup_hresult(code: i32) -> bool {
 fn lookup_from_str(input: &str) -> bool {
     let input = input.trim();
     if let Ok(code) = parse_code(&input) {
-        lookup_hresult(code)
+        lookup_error_code(code)
     } else {
         println!("Invalid input!");
         print_usage();
