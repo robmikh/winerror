@@ -1,5 +1,5 @@
 # winerror
-A small utility to decode Windows HRESULT error codes.
+A small utility to decode Windows error codes.
 
 ## Data source
 Data used in the `winerror\data` directory was taken from the [Windows Error Codes specification](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/1bc92ddf-b79e-413c-bbaa-99a5281a6c90):
