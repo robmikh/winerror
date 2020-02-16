@@ -3,22 +3,7 @@ extern crate lazy_static;
 
 use std::collections::HashMap;
 use std::i32;
-use std::i64;
-use std::fmt;
-use serde::{Serialize, Deserialize};
-
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
-struct ErrorInfo {
-    code: i32,
-    name: String,
-    description: String,
-}
-
-impl fmt::Debug for ErrorInfo {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "ErrorInfo {{ code: {:#010x}, name: \"{}\", description: \"{}\" }}", self.code, self.name, self.description)
-    }
-}
+use winerror_core::*;
 
 lazy_static! {
     static ref CODE_MAP: HashMap<i32, Vec<ErrorInfo>> = {
@@ -33,19 +18,6 @@ fn get_error_infos(code: i32) -> Option<Vec<ErrorInfo>> {
         Some(infos.to_vec())
     } else {
         None
-    }
-}
-
-fn parse_code(input: &str) -> Result<i32, std::num::ParseIntError> {
-    if input.starts_with("0x") {
-        // We do this to get around overflow checks. Otherwise,
-        // inputs like 0x80070005 would fail.
-        Ok(i64::from_str_radix(input.trim_start_matches("0x"), 16)? as i32)
-    } else {
-        // We do this to get around underflow and overflow checks. Otherwise,
-        // inputs like -2147942405 would fail.
-        let input = input.replace("-", "");
-        Ok(input.parse::<i64>()? as i32)
     }
 }
 
@@ -134,19 +106,5 @@ mod tests {
     #[test]
     fn unsuccessfull_lookup() {
         assert!(!crate::lookup_from_str("0x80070000"));
-    }
-
-    #[test]
-    #[allow(overflowing_literals)]
-    fn negative_input_test() {
-        let code = crate::parse_code("-2147942405");
-        assert_eq!(Ok(0x80070005), code);
-    }
-
-    #[test]
-    #[allow(overflowing_literals)]
-    fn hex_input_test() {
-        let code = crate::parse_code("0x80070005");
-        assert_eq!(Ok(0x80070005), code);
     }
 }

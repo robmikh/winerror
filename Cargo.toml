@@ -1,15 +1,5 @@
-[package]
-name = "winerror"
-version = "0.1.0"
-authors = ["Robert Mikhayelyan <rob.mikh@outlook.com>"]
-edition = "2018"
-build = "build/build.rs"
-
-[dependencies]
-serde = { version = "1.0.104", features = [ "derive" ] }
-bincode = "1.2.1"
-lazy_static = "1.4.0"
-
-[build-dependencies]
-serde = { version = "1.0.104", features = [ "derive" ] }
-bincode = "1.2.1"
+[workspace]
+members = [
+    "winerror_core",
+    "winerror",
+]

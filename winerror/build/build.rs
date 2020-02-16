@@ -6,7 +6,7 @@ use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
-use serde::{Serialize, Deserialize};
+use winerror_core::*;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let file_names = vec![
@@ -31,26 +31,6 @@ fn generate_map_bincode(file_names: &[&str]) -> Result<(), Box<dyn Error>> {
     file.write_all(&encoded)?;
 
     Ok(())
-}
-
-fn parse_code(input: &str) -> Result<i32, std::num::ParseIntError> {
-    if input.starts_with("0x") {
-        // We do this to get around overflow checks. Otherwise,
-        // inputs like 0x80070005 would fail.
-        Ok(i64::from_str_radix(input.trim_start_matches("0x"), 16)? as i32)
-    } else {
-        // We do this to get around underflow and overflow checks. Otherwise,
-        // inputs like -2147942405 would fail.
-        let input = input.replace("-", "");
-        Ok(input.parse::<i64>()? as i32)
-    }
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
-struct ErrorInfo {
-    code: i32,
-    name: String,
-    description: String,
 }
 
 fn create_map(file_names: &[&str]) -> Result<HashMap<i32, Vec<ErrorInfo>>, Box<dyn Error>> {
