@@ -1,7 +1,13 @@
+#[macro_use]
+extern crate lazy_static;
+
+use std::collections::HashMap;
 use std::i32;
 use std::i64;
 use std::fmt;
+use serde::{Serialize, Deserialize};
 
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
 struct ErrorInfo {
     code: i32,
     name: String,
@@ -14,24 +20,20 @@ impl fmt::Debug for ErrorInfo {
     }
 }
 
-macro_rules! code_lookup {
-    ( $input:expr, $( $code:expr, $name:tt, $desc:tt ),* ) => {
-        match $input {
-            $(
-                $code => Some(ErrorInfo {
-                    code: $code,
-                    name: $name.to_string(),
-                    description: $desc.to_string(),
-                }),
-            )*
-            _ => None,
-        }
-    }
+lazy_static! {
+    static ref CODE_MAP: HashMap<i32, Vec<ErrorInfo>> = {
+        let map: HashMap<i32, Vec<ErrorInfo>> = bincode::deserialize(include_bytes!("..\\data\\generated\\map_bincode.in")).unwrap();
+        map
+    };
 }
 
 #[allow(overflowing_literals)]
-fn get_error_info(code: i32) -> Option<ErrorInfo> {
-    include!("..\\data\\generated\\code_lookup_generated.in")
+fn get_error_infos(code: i32) -> Option<Vec<ErrorInfo>> {
+    if let Some(infos) = CODE_MAP.get(&code) {
+        Some(infos.to_vec())
+    } else {
+        None
+    }
 }
 
 fn parse_code(input: &str) -> Result<i32, std::num::ParseIntError> {
@@ -55,10 +57,13 @@ fn print_usage() {
 }
 
 fn lookup_hresult(code: i32) -> bool {
-    if let Some(info) = get_error_info(code) {
-        println!("{:#010x}", info.code);
-        println!("{}", info.name);
-        println!("{}", info.description);
+    if let Some(infos) = get_error_infos(code) {
+        println!("{} match(es) found:", infos.len());
+        for info in infos {
+            println!("{:#010x}", info.code);
+            println!("    {}", info.name);
+            println!("    {}", info.description);
+        }
         true
     } else {
         println!("No matches found for \"{:#010x}\"!", code);
@@ -102,9 +107,11 @@ mod tests {
         
         let mut temp = 0;
         for (code, will_succeed) in codes {
-            if let Some(info) = crate::get_error_info(code) {
+            if let Some(infos) = crate::get_error_infos(code) {
                 assert!(will_succeed);
-                assert_eq!(code, info.code);
+                for info in infos {
+                    assert_eq!(code, info.code);
+                }
             } else {
                 if will_succeed {
                     panic!("Unexpected lookup failure! {} ({:#010x}) was expected to succeed! {}", code, code, temp);
