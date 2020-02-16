@@ -11,7 +11,8 @@ use winerror_core::*;
 fn main() -> Result<(), Box<dyn Error>> {
     let file_names = vec![
         "hresults.txt",
-        "ntstatus.txt"
+        "ntstatus.txt",
+        "win32err.txt"
     ];
     for file_name in &file_names {
         println!("cargo:rerun-if-changed=data/{}", &file_name);
@@ -43,7 +44,13 @@ fn create_map(file_names: &[&str]) -> Result<HashMap<i32, Vec<ErrorInfo>>, Box<d
         for line in reader.lines() {
             let line = line?;
             let pieces: Vec<_> = line.splitn(3, ",").collect();
-            let code = parse_code(&pieces[0])?;
+            let code = {
+                let result = parse_code(&pieces[0]);
+                match result {
+                    Ok(code) => code,
+                    Err(_) => panic!("Parse error! \"{}\" in ({})", &pieces[0], line),
+                }
+            };
             let name = pieces[1].replace("\"", "");
             let mut description = pieces[2].trim().to_string();
             let last_char = description.pop();
