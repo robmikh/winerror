@@ -24,7 +24,6 @@ pub fn parse_code(input: &str) -> Result<i32, std::num::ParseIntError> {
     } else {
         // We do this to get around underflow and overflow checks. Otherwise,
         // inputs like -2147942405 would fail.
-        let input = input.replace("-", "");
         Ok(input.parse::<i64>()? as i32)
     }
 }
@@ -35,6 +34,20 @@ mod tests {
     #[allow(overflowing_literals)]
     fn negative_input_test() {
         let code = crate::parse_code("-2147942405");
+        assert_eq!(Ok(0x7ff8fffb), code);
+    }
+
+    #[test]
+    #[allow(overflowing_literals)]
+    fn negative_input_test2() {
+        let code = crate::parse_code("-2147221164");
+        assert_eq!(Ok(0x80040154), code);
+    }
+
+    #[test]
+    #[allow(overflowing_literals)]
+    fn positive_input_test() {
+        let code = crate::parse_code("2147942405");
         assert_eq!(Ok(0x80070005), code);
     }
 

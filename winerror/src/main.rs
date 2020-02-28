@@ -104,6 +104,16 @@ mod tests {
     }
 
     #[test]
+    fn successfull_neg_lookup() {
+        assert!(crate::lookup_from_str("-2147221164"));
+    }
+
+    #[test]
+    fn unsuccessfull_neg_lookup() {
+        assert!(!crate::lookup_from_str("-2147942405"));
+    }
+
+    #[test]
     fn unsuccessfull_lookup() {
         assert!(!crate::lookup_from_str("0x80070000"));
     }
