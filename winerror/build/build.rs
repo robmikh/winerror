@@ -12,7 +12,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file_names = vec![
         "hresults.txt",
         "ntstatus.txt",
-        "win32err.txt"
+        "win32err.txt",
+        "dxgi.txt",
+        "d2d.txt",
+        "d3d11.txt",
+        "wincodec.txt",
+        "com.txt"
     ];
     for file_name in &file_names {
         println!("cargo:rerun-if-changed=data/{}", &file_name);

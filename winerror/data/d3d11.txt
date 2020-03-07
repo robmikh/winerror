@@ -1,0 +1,6 @@
+0x887C0002, "D3D11_ERROR_FILE_NOT_FOUND", "The file was not found.",
+0x887C0001, "D3D11_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS", "There are too many unique instances of a particular type of state object.",
+0x887C0003, "D3D11_ERROR_TOO_MANY_UNIQUE_VIEW_OBJECTS", "There are too many unique instances of a particular type of view object.",
+0x887C0004, "D3D11_ERROR_DEFERRED_CONTEXT_MAP_WITHOUT_INITIAL_DISCARD", "The first call to ID3D11DeviceContext::Map after either ID3D11Device::CreateDeferredContext or ID3D11DeviceContext::FinishCommandList per Resource was not D3D11_MAP_WRITE_DISCARD.",
+0x887A0001, "D3DERR_INVALIDCALL", "The method call is invalid. For example, a method's parameter may not be a valid pointer.",
+0x887A000A, "D3DERR_WASSTILLDRAWING", "The previous blit operation that is transferring information to or from this surface is incomplete.",
